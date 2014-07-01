@@ -45,10 +45,13 @@
 
 #ifndef FTCALIB_H_
 #define FTCALIB_H_
-#include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/WrenchStamped.h>
+#include <kdl/frames.hpp>
+#include <kdl/frameacc.hpp>
 #include <eigen3/Eigen/Core>
-
+#include <bfl/filter/extendedkalmanfilter.h>
+#include <bfl/model/linearanalyticsystemmodel_gaussianuncertainty.h>
+#include <bfl/model/linearanalyticmeasurementmodel_gaussianuncertainty.h>
+#include <bfl/pdf/linearanalyticconditionalgaussian.h>
 
 // Least Squares calibration of bias of FT sensor and the mass and location of the COM of the gripper
 namespace Calibration{
@@ -59,14 +62,6 @@ public:
 	FTCalib();
 	virtual ~FTCalib();
 
-
-	// adds a F/T measurement and the corresponding measurement matrix from the gravity
-	// measurements of the accelerometer
-	// gravity is assumed to be expressed in the F/T sensor frame
-	virtual void addMeasurement(const geometry_msgs::Vector3Stamped &gravity,
-			const geometry_msgs::WrenchStamped &ft_raw);
-
-
 	// Least squares to estimate the F/T sensor parameters
 	// The estimated parameters are :
 	// [m m*cx m*cy m*cz FBx FBy FBz TBx TBy TBz]
@@ -75,21 +70,27 @@ public:
 	// FB : force bias
 	// TB: torque bias
 	// All expressed in the FT sensor frame
-	virtual Eigen::VectorXd getCalib();
-
-
+    // The inputs are the FT sensor acceleration (including gravity) and (raw) FT measurements
+    // expressed in FT sensor frame.
+    virtual Eigen::Matrix<double, 10, 1> calibrate(const KDL::FrameAcc &ft_sensor_acc, const KDL::Vector &gravity,
+                                      const KDL::Wrench &ft_raw_meas);
 
 protected:
 
-	Eigen::MatrixXd H; // stacked measurement matrices
-	Eigen::VectorXd Z; // stacked F/T measurements
-	// FT_sensor_frame_acc taken as 0
+    BFL::LinearAnalyticConditionalGaussian* m_sys_pdf;
+    BFL::LinearAnalyticSystemModelGaussianUncertainty* m_sys_model;
 
-	unsigned int m_num_meas; // number of stacked measurements;
+    BFL::LinearAnalyticConditionalGaussian *m_ft_meas_pdf;
+    BFL::LinearAnalyticMeasurementModelGaussianUncertainty *m_ft_meas_model;
+
+    BFL::Gaussian *m_prior;
+    BFL::ExtendedKalmanFilter *m_filter;
+
 
 	// measurement matrix based on "On-line Rigid Object Recognition and Pose Estimation
 	//  Based on Inertial Parameters", D. Kubus, T. Kroger, F. Wahl, IROS 2008
-	virtual Eigen::MatrixXd GetMeasurementMatrix(const geometry_msgs::Vector3Stamped &gravity);
+    virtual MatrixWrapper::Matrix getMeasurementMatrix(const KDL::FrameAcc &ft_sensor_acc,
+                                                       const KDL::Vector &gravity);
 
 };
 }
