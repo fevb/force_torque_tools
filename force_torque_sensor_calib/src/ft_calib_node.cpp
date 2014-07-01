@@ -462,6 +462,8 @@ public:
         KDL::Wrench ft_raw_meas;
         tf::wrenchMsgToKDL(m_ft_raw.wrench, ft_raw_meas);
 
+        ft_raw_meas = -1.0*ft_raw_meas;
+
         m_ft_sensor_params = m_ft_calib->calibrate(ft_sensor_acc, gravity, ft_raw_meas);
     }
 

@@ -4,6 +4,15 @@ loop_rate: 650.0
 # waiting time after moving to each pose before taking F/T measurements
 wait_time: 2.0
 
+# joint names
+joint_names: ['right_arm_1_joint', 'right_arm_2_joint', 'right_arm_3_joint', 'right_arm_4_joint', 'right_arm_5_joint', 'right_arm_6_joint', 'right_arm_7_joint']
+
+# base link
+base_link: 'arm_base_link'
+
+# ft sensor link
+ft_sensor_link: 'right_arm_ft_sensor'
+
 # Name of the moveit group
 moveit_group_name: 'right_arm'
 
