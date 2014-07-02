@@ -223,7 +223,7 @@ public:
 		m_group = new move_group_interface::MoveGroup(m_moveit_group_name);
         if (!m_kdl_wrapper.init(m_base_link, m_ft_sensor_link))
         {
-            ROS_ERROR("Coudln't initialize KDL wrapper ... shutting down node...");
+            ROS_ERROR("Couldn't initialize KDL wrapper ... shutting down node...");
             n_.shutdown();
             return;
         }
